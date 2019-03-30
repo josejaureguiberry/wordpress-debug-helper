@@ -41,12 +41,21 @@ if(! class_exists('Custom_Debugger') ):
 
             }
 
+
             if( !empty($_REQUEST['search_in_folder'])){
                 $search_arguments = explode('|', $_REQUEST['search_in_folder']);
                 $folder = $search_arguments[0];
                 $term = $search_arguments[1];
+                $mode = null;
+                if (sizeof($search_arguments)== 3){
+                    $mode = $search_arguments[2];
+                    echo '<h4> VERBOSE MODE </h4>';
+                } else {
+                    echo '<h4> ONLY MATCHING CASES WILL BE DISPLAYED </h4>';
+                }
+
                 if( !empty($folder) && !empty($term)){
-                    $this->search_in_folder($folder, $term);
+                    $this->search_in_folder($folder, $term, $mode);
                     die();
                 }
 
@@ -134,23 +143,21 @@ if(! class_exists('Custom_Debugger') ):
             do_action('debugger_var_dump', 'Enabled', 'DEBUG_MODE', 0, 0);
         }
 
-        function search_in_folder($folder, $term){
-            echo '<h4>Searching in:'.$folder.'</h4>';
+        function search_in_folder($folder, $term, $mode){
+            if ($mode=='verbose'){echo'<h4>Searching in:'.$folder.'</h4>';}
             $string = $term;
             $dir = new DirectoryIterator($folder);
             foreach ($dir as $fileInfo) {
-
-                $content = file_get_contents($fileInfo->getPathname());
-
                 if($fileInfo->isFile()){
+                    $content = file_get_contents($fileInfo->getPathname());
                     if (strpos($content, $string) !== false) {
-                        echo'<h4>Found in:</h4><pre>';
+                        echo'<h4>Found in:'.$fileInfo->getPathname().'</h4><pre>';
                         var_dump($fileInfo->getFilename());
                         echo'</pre>';
                     }
                 } else if(!$fileInfo->isDot()){
                     if($fileInfo->isDir()){
-                        $this->search_in_folder($fileInfo->getPathname(), $term);
+                        $this->search_in_folder($fileInfo->getPathname(), $term,$mode);
                     }
                 }
 
