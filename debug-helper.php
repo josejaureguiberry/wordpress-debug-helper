@@ -47,7 +47,7 @@ if(! class_exists('Custom_Debugger') ):
                 $folder = $search_arguments[0];
                 $term = $search_arguments[1];
                 $mode = null;
-                if (sizeof($search_arguments)== 3){
+                if (!empty($search_arguments[2])){
                     $mode = $search_arguments[2];
                     echo '<h4> VERBOSE MODE </h4>';
                 } else {
