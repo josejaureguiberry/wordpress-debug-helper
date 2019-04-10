@@ -3,7 +3,7 @@
 Plugin Name: Debug Helper
 Plugin URI: https://github.com/jjaureguiberrry/wordpress-debug-helper
 Description: Print and log debug data from your code in production environment without affecting end user experience.
-Version: 1.0
+Version: 1.1.0
 Author: Jose Jaureguiberry
 Author URI: https://github.com/jjaureguiberrry
 License: GNU General Public License (Version 3 - GPLv3)
@@ -45,8 +45,17 @@ if(! class_exists('Custom_Debugger') ):
                 $search_arguments = explode('|', $_REQUEST['search_in_folder']);
                 $folder = $search_arguments[0];
                 $term = $search_arguments[1];
+                $mode = null;
+                echo '<h4>Searching for: "'.$term.'"</h4>';
+                if (!empty($search_arguments[2])){
+                    $mode = $search_arguments[2];
+                    echo '<h4> VERBOSE MODE ON </h4>';
+                } else {
+                    echo '<h4> VERBOSE MODE OFF; ONLY MATCHING CASES WILL BE DISPLAYED </h4>';
+                }
                 if( !empty($folder) && !empty($term)){
-                    $this->search_in_folder($folder, $term);
+                    $this->search_in_folder($this->resolve_path($folder), $term, $mode);
+                    echo '<h4>Matching cases found: "'.$counter.'"</h4>';
                     die();
                 }
 
@@ -134,27 +143,65 @@ if(! class_exists('Custom_Debugger') ):
             do_action('debugger_var_dump', 'Enabled', 'DEBUG_MODE', 0, 0);
         }
 
-        function search_in_folder($folder, $term){
-            echo '<h4>Searching in:'.$folder.'</h4>';
+        /*
+        * Search for a $term into every file in $folder and subfolders
+        *
+        * When $mode = 'verbose' it will print every search, when $mode != 'verbose'
+        * it will only print marching cases
+        * 
+        * @param $folder Folder to search into
+        * @param $term Term or expresion to look for
+        * @param $mode Only verbose mode is available
+        *
+        * @since 1.1.0
+        */
+        function search_in_folder($folder, $term, $mode){
+            if ($mode=='verbose'){echo'<h4>Searching in:'.$folder.'</h4>';}
             $string = $term;
             $dir = new DirectoryIterator($folder);
             foreach ($dir as $fileInfo) {
-
-                $content = file_get_contents($fileInfo->getPathname());
-
                 if($fileInfo->isFile()){
+                    $content = file_get_contents($fileInfo->getPathname());
                     if (strpos($content, $string) !== false) {
-                        echo'<h4>Found in:</h4><pre>';
+                        echo'<h4>Found in:'.$fileInfo->getPathname().'</h4><pre>';
                         var_dump($fileInfo->getFilename());
                         echo'</pre>';
                     }
                 } else if(!$fileInfo->isDot()){
                     if($fileInfo->isDir()){
-                        $this->search_in_folder($fileInfo->getPathname(), $term);
+                        $this->search_in_folder($fileInfo->getPathname(), $term,$mode);
                     }
                 }
 
             }
+            
+        }
+        
+        /*
+        * Resolve a valid URL.
+        *
+        * Returns the absolute URL by merging the current working directory (cwd)
+        * and the provided directory $dir.
+        * It will die() if there is no matching folder between both URLs.
+        * 
+        * @param $dir Folder to search into
+        *
+        * @since 1.1.0
+        */
+        function resolve_path($dir){
+            if ($dir[0]=='/'){
+                $arr_dir = explode('/',substr($dir,1));
+            } else $arr_dir = explode('/',$dir);
+            $arr_cwd = explode('/', getcwd());
+            $i=sizeof($arr_cwd)-1;
+            while (!($arr_cwd[$i]==$arr_dir[0])&& $i>0){
+                $i--;
+            }
+            if ($i==0){
+                echo '<h4>Could not resolve URL</h4><pre>';
+                die();
+            }
+            return implode('/',array_merge(array_slice($arr_cwd,0,$i),$arr_dir));
         }
 
     }

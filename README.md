@@ -21,4 +21,4 @@ This feature will work only if the query parameter **debug_mode** is present and
 do_action('debugger_var_dump', $message, $identifier, $print_stack, $die);
 ```
 **In order to Search string in project files you need to add the following parameter to the URL:**
-`search_in_folder={folder_name}|{needle}`
+`search_in_folder={folder_name}|{needle}|{mode}`
