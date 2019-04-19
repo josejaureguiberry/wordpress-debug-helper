@@ -1,6 +1,6 @@
 # Wordpress Debug Helper
 
-This code is intended to be used as a mu-plugin (Must Use Plugin). 
+This plugin was meant to be used by developers, support staff and advanced users for debugging purposes.
 Due to security reasons, it is recommended to uninstall the plugin when it is not used.
 
 # Features
