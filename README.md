@@ -17,6 +17,7 @@ do_action('debugger_write_log', $message, $identifier, $print_stack);
 ```
 **Print recursive data into screen**
 This feature will work only if the query parameter **debug_mode** is present and set to **true**.
+Example: https://example.com/?debug_mode=1
 ```php
 do_action('debugger_var_dump', $message, $identifier, $print_stack, $die);
 ```
