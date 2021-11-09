@@ -20,7 +20,7 @@ if(! class_exists('Custom_Debugger') ):
     class Custom_Debugger{
 
         function __construct(){
-            add_action( 'debugger_write_log', array ( 'Custom_Debugger', 'write_log' ), 10, 3);
+            add_action( 'debugger_write_log', array ( 'Custom_Debugger', 'write_log' ), 10, 4);
             add_action( 'init', array ($this, 'test_var_dump'));
 
             if( !empty($_REQUEST['debug_mode'])){
@@ -111,8 +111,11 @@ if(! class_exists('Custom_Debugger') ):
             return $active_plugins;
         }
 
-        static function write_log ( $message, $identifier = 'Custom Debugger', $print_stack = 0 )  {
-            $location = __DIR__ .'/my-errors.log';
+        static function write_log ( $message, $identifier = 'Custom Debugger', $print_stack = 0, $output_filename = null )  {
+            $location = __DIR__ . '/my-errors.log';
+            if( null !== $output_filename && !empty($output_filename) ){
+                $location = __DIR__ . '/' . sanitize_file_name($output_filename) . '.log';
+            }
             do_action('debugger_pre_write_log', $message, $identifier, $print_stack);
 
             error_log( PHP_EOL . date('Y-M-d H:i:s') . ': ', 3, $location);
